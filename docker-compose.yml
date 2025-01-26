@@ -1,0 +1,8 @@
+---
+services:
+  imageview:
+    image: jsmit257/imageview:latest
+    build: .
+    ports: [ 1616:1616 ]
+    volumes:
+      - /home/johnny/back:/www/images
