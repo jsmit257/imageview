@@ -1,7 +1,8 @@
 <html>
-  <head>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
-    <script>
+
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+  <script>
     $(_ => {
       $('body')
         .on('click', '.item', e => {
@@ -14,75 +15,82 @@
               method: 'GET',
               sync: false,
               success: html => $ndx
-								.attr({
-									'root': href,
-									'fetching': true,
-								})
-								.parent()
-								.trigger('send', html),
+                .attr({
+                  'root': href,
+                  'fetching': true,
+                })
+                .parent()
+                .trigger('send', html),
               error: console.log,
             })
           } else {
-              $('.viewport>.image').attr('src', href)
+            $('.viewport>.image').attr('src', href)
           }
         })
         .on('send', '.index', (e, html) => {
-					let $stub = $(e.currentTarget).find('[fetching]')
+          let $stub = $(e.currentTarget).find('[fetching]')
 
           $(html)
             .find('a:not([href="../"])')
-						.each((_, v) => $('<div>')
-							.addClass('item')
-							.text($stub.attr('root') + v.innerText)
-							.insertBefore($stub))
+            .each((_, v) => $('<div>')
+              .addClass('item')
+              .text($stub.attr('root') + v.innerText)
+              .insertBefore($stub))
 
-					$stub.remove()
+          $stub.remove()
         })
         .find('>.index>.item')
         .trigger('click')
     })
-    </script>
-    <style>
-      body {
-        background-color: grey;
-        line-height: 150%;
-        width: 99%;
-      }
-      body>div {
-        clear: none;
-        float: left;
-        overflow-y: auto;
-      }
-      .index {
-        height: -webkit-fill-available;
-        width: 20%;
-      }
-      .index>.item {
-				border-radius: .3em;
-        cursor: pointer;
-				margin-right: .2em;
-				overflow-x: hidden;
-				white-space: nowrap;
-      }
-      .index>.item:hover {
-				background-color: lightgrey;
-				color: purple;
-			}
-      .viewport {
-        width:80%;
-      }
-      .viewport>.image {
-        width: -webkit-fill-available;
-      }
-    </style>
-  </head>
-  <body>
-    <div class=index>
-      <div class=item>/images/</div>
-    </div>
-    <div class=viewport>
-      <img class=image>
-    </div>
-  </body>
-</html>
+  </script>
+  <style>
+    body {
+      background-color: grey;
+      line-height: 150%;
+      width: 99%;
+    }
 
+    body>div {
+      clear: none;
+      float: left;
+      overflow-y: auto;
+    }
+
+    .index {
+      height: -webkit-fill-available;
+      width: 20%;
+    }
+
+    .index>.item {
+      border-radius: .3em;
+      cursor: pointer;
+      margin-right: .2em;
+      overflow-x: hidden;
+      white-space: nowrap;
+    }
+
+    .index>.item:hover {
+      background-color: lightgrey;
+      color: purple;
+    }
+
+    .viewport {
+      width: 80%;
+    }
+
+    .viewport>.image {
+      width: -webkit-fill-available;
+    }
+  </style>
+</head>
+
+<body>
+  <div class=index>
+    <div class=item>/images/</div>
+  </div>
+  <div class=viewport>
+    <img class=image>
+  </div>
+</body>
+
+</html>
