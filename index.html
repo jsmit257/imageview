@@ -3,47 +3,98 @@
 <head>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
   <script>
-    $(_ => {
-      $('body')
-        .on('click', '.item', e => {
-          let $ndx = $(e.currentTarget)
-          let href = $ndx.text().trim()
+    $(_ => $('body')
+      .on('click', '>.index>.item[file="true"]', e => $('.viewport>.image')
+        .css('width', $(e.currentTarget).data('img-width') || '-webkit-fill-available')
+        .removeProp('last-y'))
+      .on('click', '>.index>.item[file="true"]:not(.selected)', e => {
+        let $item = $(e.currentTarget)
 
-          if (/\/$/.test(href)) {
-            $.ajax({
-              url: href,
-              method: 'GET',
-              sync: false,
-              success: html => $ndx
-                .attr({
-                  'root': href,
-                  'fetching': true,
-                })
-                .parent()
-                .trigger('send', html),
-              error: console.log,
+        $item.parent().find('.selected').removeClass('selected')
+        $('.viewport>.image').attr('src', $item.text().trim())
+        $item.addClass('selected')
+      })
+      .on('click', '>.index>.item[file="false"]:not(.forbidden)', e => {
+        let $item = $(e.currentTarget)
+        let href = $item.text().trim()
+
+        $.ajax({
+          url: href,
+          method: 'GET',
+          sync: false,
+          success: html => $item
+            .attr({
+              'root': href,
+              'fetching': true,
             })
-          } else {
-            $('.viewport>.image').attr('src', href)
+            .parent()
+            .trigger('send', html),
+          error: xhr => xhr.status == 403 && $item.addClass('forbidden'),
+        })
+      })
+      .on('send', '>.index', (e, html) => {
+        let $stub = $(e.currentTarget).find('[fetching]')
+
+        $(html)
+          .find('a:not([href="../"])')
+          .each((_, v) => $('<div>')
+            .addClass('item')
+            .attr('file', !/\/$/.test(v.innerText))
+            .text($stub.attr('root') + v.innerText)
+            .insertBefore($stub))
+
+        $stub.remove()
+      })
+      .on('click', '>.index', e => e.ctrlKey && $(e.currentTarget)
+        .toggleClass('pinned'))
+      .on('dblclick', '>.index>.item:not(.forbidden)', e => $(e.currentTarget)
+        .toggleClass('pin'))
+      .on('mousemove', '>.viewport>.image', e => { // kinda a poor-man's zoom
+        if (e.buttons !== 4) {
+          return
+        }
+
+        let $img = $(e.currentTarget)
+        let lastY = $img.prop('last-y')
+        if (typeof lastY !== 'undefined') {
+          let delta = e.screenY - lastY < 0 ? 1 : -1
+          let inc = $img.parent().get(0).clientWidth / 100
+          let w = $img.get(0).clientWidth + delta * inc
+          // let inc = (e.screenY - lastY) / screen.height
+          // let w = $img.get(0).clientWidth + inc
+          if (w >= inc) {
+            $img.css('width', w)
+			$(e.delegateTarget)
+				.find('>.index>.selected')
+				.data('img-width', w)
           }
-        })
-        .on('send', '.index', (e, html) => {
-          let $stub = $(e.currentTarget).find('[fetching]')
+        }
 
-          $(html)
-            .find('a:not([href="../"])')
-            .each((_, v) => $('<div>')
-              .addClass('item')
-              .text($stub.attr('root') + v.innerText)
-              .insertBefore($stub))
-
-          $stub.remove()
-        })
-        .find('>.index>.item')
-        .trigger('click')
-    })
+        $img.prop('last-y', e.screenY)
+      })
+      .find('>.index>.item')
+      .trigger('click'))
   </script>
   <style>
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      border-radius: 5px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background-image: linear-gradient(0, transparent, #0a084192, #0a0841c1, #0a084192, transparent);
+      border-radius: 3px;
+    }
+
+    select {
+      appearance: initial;
+      -webkit-appearance: auto;
+      -moz-appearance: auto;
+    }
+
     body {
       background-color: grey;
       line-height: 150%;
@@ -65,16 +116,36 @@
       border-radius: .3em;
       cursor: pointer;
       margin-right: .2em;
+      padding-left: .2em;
       overflow-x: hidden;
       white-space: nowrap;
     }
 
-    .index>.item:hover {
+    .index>.item.pin {
+      background-color: lightgreen;
+    }
+
+    .index.pinned>.item:not(.pin) {
+		  display: none;
+		}
+
+    .index>.item.forbidden {
+      color: darkgrey;
+      cursor: not-allowed;
+      font-style: italic;
+    }
+
+    .index>.item.selected {
+      background-color: lightblue;
+    }
+
+    .index>.item:not(.selected):not(.forbidden):hover {
       background-color: lightgrey;
       color: purple;
     }
 
     .viewport {
+      height: 100%;
       width: 80%;
     }
 
@@ -86,7 +157,7 @@
 
 <body>
   <div class=index>
-    <div class=item>/images/</div>
+    <div class=item file="false">/images/</div>
   </div>
   <div class=viewport>
     <img class=image>

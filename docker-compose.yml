@@ -5,4 +5,4 @@ services:
     build: .
     ports: [ 1616:1616 ]
     volumes:
-      - /home/johnny/back:/www/images
+      - ./images:/www/images

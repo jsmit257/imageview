@@ -1,10 +1,10 @@
-.PHONY: up
-up: down
-	docker-compose up --build --remove-orphans -d imageview
-
 .PHONY: down
 down:
 	docker-compose down -t5 imageview
+
+.PHONY: up
+up: down
+	docker-compose up --build --remove-orphans -d imageview
 
 .PHONY: logs
 logs:
